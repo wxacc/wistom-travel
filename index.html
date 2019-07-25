@@ -1,0 +1,133 @@
+<!DOCTYPE html><html><head><meta charset=utf-8><meta name=format-detection content="telephone=no"><meta name=msapplication-tap-highlight content=no><meta name=viewport content="user-scalable=yes,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width"><title>3D定位导航系统</title><link rel=stylesheet href=./css/alert.css><script type=text/javascript src=./js/alert.js></script><script type=text/javascript src=./js/mqtt.js></script><script type=text/javascript src=./js/three.js></script><script type=text/javascript src=./js/OrbitControls.js></script><script type=text/javascript src=./js/ThreeBSP.js></script><script type=text/javascript src=./js/astar.js></script><script type=text/javascript src=./js/routeSearch.js></script><script type=text/javascript src=./js/svg-pan-zoom.min.js></script><script type=text/javascript src=./js/hammer.min.js></script><script src=https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js></script><script type=text/javascript src="http://api.map.baidu.com/api?v=3.0&ak=6kLtP2YQ3Z7H2wAlvsmW9jiM4DwVMXHA"></script><script type=text/javascript src=cordova.js></script><script type=text/javascript>var backClick=0;// 退出点击次数，默认为0
+
+        var OnDeviceReady = function(){
+          navigator.splashscreen.hide();
+          window.destinationType=navigator.camera.DestinationType;
+          initiateUI();
+        };
+
+        var getRegistrationID = function(){
+          window.plugins.jPushPlugin.getRegistrationID(onGetRegistrationID);
+        };
+
+        var onGetRegistrationID = function(data){
+          try{
+            
+            if(data.length == 0){
+              window.setTimeout(getRegistrationID,1000);
+            }else{
+              console.log("registerID:"+data)
+            }
+          }catch(exception){
+            console.log("getregisterID:"+exception);
+          }
+        };
+        var initiateUI = function(){
+            try{
+                  //获取android App版本号
+                  // cordova.getAppVersion.getVersionNumber().then(function (version){
+                  //     console.log(version)
+                  // });
+                  window.wikitudePlugin = cordova.require("com.wikitude.phonegap.WikitudePlugin.WikitudePlugin");
+                  window.JPush.init();
+                  window.JPush.setDebugMode(true);
+                  window.plugins.jPushPlugin.setBadge(0)//设置Jpush服务器角标值为“消息”页面底部未读消息个数
+                  window.plugins.jPushPlugin.setApplicationIconBadgeNumber(0);//设置应用本地的角标值为“消息”页面底部未读消息个数
+
+                  window.setTimeout(getRegistrationID,1000);
+                  baidumap_location.getCurrentPosition(function (result) { 
+                    console.log('success')
+                    console.log(JSON.stringify(result));
+                    
+                    window.lat =  result.latitude;
+                    window.lng =  result.longitude;
+                    localStorage.setItem("lat",result.latitude);//用户Id
+                    localStorage.setItem("lng",result.longitude);//用户Id
+                    Scity = result.city.split('市')[0];
+                    Sdistrict = result.district;
+                  },function(error){
+                   console.log('error:'+JSON.stringify(error))
+                })
+                  // var compassOptions = {
+                  //     frequency: 3000
+                  // }
+
+                  // var watchID = navigator.compass.watchHeading(compassSuccess, compassError, compassOptions);
+
+                  // function compassSuccess(heading) {
+                  //     alert('Heading: ' + heading.magneticHeading);
+                  //     // setTimeout(function() {
+                  //     //   navigator.compass.clearWatch(watchID);
+                  //     // }, 10000);
+                  // };
+
+                  // function compassError(error) {
+                  //     alert('CompassError: ' + error.code);
+                  // };
+            
+            }catch(exception){
+              console.log("initiate:"+exception)
+            }
+        };
+        var onOpenNotification = function(event){//打开消息,并跳转到具体详情页面
+          try{
+                console.log(window.location.hash)
+               
+                window.location.href="#/black"
+            }catch(exception){
+              console.log(exception)
+          }
+        };
+        var onReceiveNotification = function(event){
+          try{
+             var temp = window.location.hash;
+             if (temp == '#/information'){
+              window.location.href="#/black"
+             }else{
+              //alert(event.extras.content)
+              new $Msg({
+                content:event.extras.content,
+                type:"success",
+                cancle:function(){
+          
+                },
+                confirm:function(){
+                
+                }
+              })
+
+             }
+          }catch(exception){
+            console.log(exception)
+          }   
+        };
+        var onBackKeyDown = function(){//Android物理返回键
+              
+              var url = window.location.href.split('#')[1];//获取当前页面url 
+              //window.location.harh='#/work'
+              if(url=='/home' || url == '/ride' || url == '/my'){  // 处于app首页,满足退出app操作
+                  if(backClick == 0){
+                      backClick++;
+                      //alert("再点一次退出");
+                      setTimeout(function(){
+                        backClick = 0;
+                      },2000);//大于2s 将点击次数清零
+                  }else if(backClick == 1){  
+                      //window.plugins.jPushPlugin.deleteAlias({sequence:1})//清除设备别名
+                      navigator.app.exitApp(); //退出app
+                  } 
+              }else{
+                history.back(); // 不满足退出操作，，返回上一页
+              }
+        };
+        function onLoad() {
+          document.addEventListener("deviceready",OnDeviceReady,false);
+          document.addEventListener("jpush.openNotification",onOpenNotification,false);
+          document.addEventListener("jpush.receiveNotification",onReceiveNotification,false);
+          document.addEventListener("backbutton", onBackKeyDown, false);
+        };</script><style>/* .BMap_cpyCtrl{
+      display: none;
+    }    */
+    .anchorBL{
+      display: none;
+    }</style><link href=./css/app.3ffcd9f18eb6467b51fcd1458789c838.css rel=stylesheet></head><body onload=onLoad()><div id=app></div><script type=text/javascript src=./js/manifest.79c65e68879e79ee9c15.js></script><script type=text/javascript src=./js/vendor.3db8b28b4f31860f9e21.js></script><script type=text/javascript src=./js/app.3b5212dfe1015490c3c5.js></script></body></html>
